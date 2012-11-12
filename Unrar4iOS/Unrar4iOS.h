@@ -7,17 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "raros.hpp"
-#import "dll.hpp"
 
-@interface Unrar4iOS : NSObject {
-
-	HANDLE	 _rarFile;
-	struct	 RARHeaderDataEx *header;
-	struct	 RAROpenArchiveDataEx *flags;
-	NSString *filename;
-	NSString *password;
-}
+@interface Unrar4iOS : NSObject
 
 @property(nonatomic, retain) NSString* filename;
 @property(nonatomic, retain) NSString* password;

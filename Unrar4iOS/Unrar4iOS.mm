@@ -8,6 +8,8 @@
 
 #import "Unrar4iOS.h"
 #import "RARExtractException.h"
+#import "raros.hpp"
+#import "dll.hpp"
 
 @interface Unrar4iOS(PrivateMethods)
 -(BOOL)_unrarOpenFile:(NSString*)rarFile inMode:(NSInteger)mode;
@@ -17,6 +19,13 @@
 @end
 
 @implementation Unrar4iOS
+{
+	HANDLE	 _rarFile;
+	struct	 RARHeaderDataEx *header;
+	struct	 RAROpenArchiveDataEx *flags;
+	NSString *filename;
+	NSString *password;
+}
 
 @synthesize filename, password;
 

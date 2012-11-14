@@ -9,6 +9,13 @@
 #import <Foundation/Foundation.h>
 
 @interface Unrar4iOS : NSObject
+{
+	void	 *_rarFile;
+	struct	 RARHeaderDataEx *header;
+	struct	 RAROpenArchiveDataEx *flags;
+	NSString *filename;
+	NSString *password;
+}
 
 @property(nonatomic, retain) NSString* filename;
 @property(nonatomic, retain) NSString* password;

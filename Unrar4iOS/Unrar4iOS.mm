@@ -19,13 +19,6 @@
 @end
 
 @implementation Unrar4iOS
-{
-	HANDLE	 _rarFile;
-	struct	 RARHeaderDataEx *header;
-	struct	 RAROpenArchiveDataEx *flags;
-	NSString *filename;
-	NSString *password;
-}
 
 @synthesize filename, password;
 

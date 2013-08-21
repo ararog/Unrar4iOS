@@ -30,10 +30,12 @@ int CALLBACK CallbackProc(UINT msg, long UserData, long P1, long P2) {
 		case UCM_CHANGEVOLUME:
 			break;
 		case UCM_PROCESSDATA:
-			buffer = (UInt8 **) UserData;
-			memcpy(*buffer, (UInt8 *)P1, P2);
-			// advance the buffer ptr, original m_buffer ptr is untouched
-			*buffer += P2;
+            if (UserData) {
+                buffer = (UInt8 **) UserData;
+                memcpy(*buffer, (UInt8 *)P1, P2);
+                // advance the buffer ptr, original m_buffer ptr is untouched
+                *buffer += P2;
+            }
 			break;
 		case UCM_NEEDPASSWORD:
 			break;
@@ -109,9 +111,59 @@ int CALLBACK CallbackProc(UINT msg, long UserData, long P1, long P2) {
 	return files;
 }
 
--(BOOL) unrarFileTo:(NSString*)path overWrite:(BOOL)overwrite {
+-(BOOL) unrarFile:(NSString *)aFile to:(NSString*) path overWrite:(BOOL) overwrite; {
+	size_t totalSize = 0;
+    
+	int RHCode = 0, PFCode = 0;
 	
-	return NO;
+	[self _unrarOpenFile:filename inMode:RAR_OM_EXTRACT withPassword:password];
+	
+	while ((RHCode = RARReadHeaderEx(_rarFile, header)) == 0) {
+		NSString *_filename = [NSString stringWithCString:header->FileName encoding:NSASCIIStringEncoding];
+        
+		if ([_filename isEqualToString:aFile]) {
+			totalSize = header->UnpSize;
+			break;
+		}
+		else {
+			if ((PFCode = RARProcessFile(_rarFile, RAR_SKIP, NULL, NULL)) != 0) {
+				[self _unrarCloseFile];
+				return nil;
+			}
+		}
+	}
+	
+	if (totalSize == 0) { // archived file not found
+		[self _unrarCloseFile];
+		return nil;
+	}
+    NSString *filePath = [path stringByAppendingPathComponent:aFile];
+    
+    if (overwrite) {
+        [[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
+    }    
+	RARSetCallback(_rarFile, CallbackProc, NULL);
+	
+	PFCode = RARProcessFile(_rarFile, RAR_EXTRACT, (char *)[path UTF8String], NULL);
+    
+    [self _unrarCloseFile];
+    
+    if (PFCode == ERAR_MISSING_PASSWORD) {
+        RARExtractException *exception = [RARExtractException exceptionWithStatus:RARArchiveProtected];
+        @throw exception;
+        return NO;
+    }
+    if (PFCode == ERAR_BAD_ARCHIVE) {
+        RARExtractException *exception = [RARExtractException exceptionWithStatus:RARArchiveInvalid];
+        @throw exception;
+        return NO;
+    }
+    if (PFCode == ERAR_UNKNOWN_FORMAT) {
+        RARExtractException *exception = [RARExtractException exceptionWithStatus:RARArchiveBadFormat];
+        @throw exception;
+        return NO;
+    }
+    return YES;
 }
 
 -(NSData *) extractStream:(NSString *)aFile {

@@ -11,8 +11,8 @@
 
 @interface UnrarExampleViewController : UIViewController {
     
-	IBOutlet UIButton		*decompressButton;
-	IBOutlet UIImageView	*imageView;
+	IBOutlet UIButton *decompressButton;
+	__strong IBOutlet UIImageView *imageView;
 }
 
 - (IBAction)decompress:(id)sender;
